@@ -72,7 +72,7 @@ sudo certbot certonly --apache --email ${email} --agree-tos -n -d ${url}
 sudo sed -i 's/#/ /g' /etc/apache2/sites-available/${url}.conf
 sudo service apache2 reload
 
-# Nextlcoud: Create data-directory & set permission rights
+# Nextlcoud: Create data directory & set permission rights
 sudo -u ${short} mkdir /home/${short}/data
 sudo chown -R www-data:www-data /home/${short}/data
 
@@ -85,11 +85,11 @@ pwduser=$(date +%s | sha256sum | base64 | head -c 32)
 sudo -u www-data php /var/www/${short}/occ maintenance:install --database "mysql" --database-name "${short}" --database-user "${short}_u" --database-pass "${pwddb}" --data-dir "/home/${short}/data" --admin-user "${user}" --admin-pass "${pwduser}"
 
 # Nextcloud: Configuration
-# Add to trusted_domain
+## Change the trusted_domain
 sudo -u www-data php /var/www/${short}/occ config:system:set trusted_domains 0 --value=${url}
-# CLI-URL
+## Set the CLI-URL
 sudo -u www-data php /var/www/${short}/occ config:system:set overwrite.cli.url --value=https://${url}
-# Configure Mem Cache
+## Configure Mem Cache
 sudo -u www-data php /var/www/${short}/occ config:system:set memcache.local --value=\\OC\\Memcache\\APCu
 sudo sed -i "s/memory_limit = .*/memory_limit = 512M/" /etc/php/7.4/apache2/php.ini
 sudo sed -i '$aopcache.enable=1' /etc/php/7.4/apache2/php.ini
@@ -100,24 +100,24 @@ sudo sed -i '$aopcache.memory_consumption=128' /etc/php/7.4/apache2/php.ini
 sudo sed -i '$aopcache.save_comments=1' /etc/php/7.4/apache2/php.ini
 sudo sed -i '$aopcache.revalidate_freq=1' /etc/php/7.4/apache2/php.ini
 sudo service apache2 reload
-# Timeout
+## Timeout
 sudo -u www-data sed -i "s/RequestOptions::TIMEOUT => 30/RequestOptions::TIMEOUT => 600/" /var/www/${short}/lib/private/Http/Client/Client.php
 
-#Nextcloud: Install Apps
-# Calendar
+# Nextcloud: Install apps
+## Calendar
 sudo -u www-data php /var/www/${short}/occ app:install calendar
-# Contacts
+## Contacts
 sudo -u www-data php /var/www/${short}/occ app:install contacts
-# Mail
+## Mail
 sudo -u www-data php /var/www/${short}/occ app:install mail
-# Talk
+## Talk
 sudo -u www-data php /var/www/${short}/occ app:install spreed
-# OnlyOffice
+## OnlyOffice
 sudo -u www-data php /var/www/${short}/occ app:install documentserver_community
 sudo -u www-data php /var/www/${short}/occ app:install onlyoffice
-# Groupfolders
+## Groupfolders
 sudo -u www-data php /var/www/${short}/occ app:install groupfolderse
 
-# Ausgabe
+## Password output 
 echo "Database password: ${pwddb}"
-echo "Admin password: ${pwduser}"
+echo "Admin password:    ${pwduser}"
