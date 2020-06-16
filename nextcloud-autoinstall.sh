@@ -102,6 +102,9 @@ sudo sed -i '$aopcache.revalidate_freq=1' /etc/php/7.4/apache2/php.ini
 sudo service apache2 reload
 ## Timeout
 sudo -u www-data sed -i "s/RequestOptions::TIMEOUT => 30/RequestOptions::TIMEOUT => 600/" /var/www/${short}/lib/private/Http/Client/Client.php
+## URL without index.php
+sudo -u www-data php /var/www/${short}/occ config:system:set htaccess.RewriteBase --value=/
+sudo -u www-data php occ maintenance:update:htaccess
 
 # Nextcloud: Install apps
 ## Calendar
