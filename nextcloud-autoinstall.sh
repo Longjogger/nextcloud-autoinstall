@@ -119,7 +119,7 @@ sudo -u www-data php /var/www/${short}/occ app:install spreed
 sudo -u www-data php /var/www/${short}/occ app:install documentserver_community
 sudo -u www-data php /var/www/${short}/occ app:install onlyoffice
 ## Groupfolders
-sudo -u www-data php /var/www/${short}/occ app:install groupfolderse
+sudo -u www-data php /var/www/${short}/occ app:install groupfolders
 
 ## Password output 
 echo "Database password: ${pwddb}"
