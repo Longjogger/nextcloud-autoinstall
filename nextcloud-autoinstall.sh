@@ -104,7 +104,7 @@ sudo service apache2 reload
 sudo -u www-data sed -i "s/RequestOptions::TIMEOUT => 30/RequestOptions::TIMEOUT => 600/" /var/www/${short}/lib/private/Http/Client/Client.php
 ## URL without index.php
 sudo -u www-data php /var/www/${short}/occ config:system:set htaccess.RewriteBase --value=/
-sudo -u www-data php occ maintenance:update:htaccess
+sudo -u www-data php /var/www/${short}/occ maintenance:update:htaccess
 
 # Nextcloud: Install apps
 ## Calendar
