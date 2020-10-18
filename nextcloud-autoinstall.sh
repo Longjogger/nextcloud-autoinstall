@@ -1,18 +1,32 @@
-#!/bin/bash -e
+#!/bin/bash
 
-# Parameter
-echo "URL:"
+# Insert variables
+echo "Instance URL:"
 read url
-echo "Short name:"
+if [ url == "" ]; then
+    echo "URL is empty. Script aborted."
+    exit 1
+fi
+echo "Instance name:"
 read short
+if [ short == "" ]; then
+    echo "Short name is empty. Script aborted."
+    exit 1
+fi
+
 echo "Admin email:"
 read email
+if [ email == "" ]; then
+    echo "Admin e-mail is empty. Script aborted."
+    exit 1
+fi
+
 echo "Nextcloud admin user:"
 read user
-
-# Add User
-sudo adduser ${short} --disabled-password --gecos ""
-sudo adduser ${short} www-data
+if [ user == "" ]; then
+    echo "Nextcloud admin user is empty. Script aborted."
+    exit 1
+fi
 
 # Updates
 sudo apt-get -y update
@@ -29,11 +43,10 @@ sudo a2enmod headers rewrite ssl
 sudo wget -P /tmp/ https://download.nextcloud.com/server/releases/latest.zip
 sudo unzip /tmp/latest.zip -d /tmp/
 sudo mkdir /var/www/${short}
-sudo mv /tmp/nextcloud/.[!.]* /var/www/${short}/
-sudo mv /tmp/nextcloud/* /var/www/${short}/
+sudo rsync -a --info=progress2 /tmp/nextcloud/. /var/www/${short}/
 sudo rm -r /tmp/nextcloud/
 sudo rm -r /tmp/latest.zip
-sudo chown -R www-data:www-data /var/www/${short}
+sudo chown -R www-data:www-data /var/www/${short}/
 
 # Apache: Configuration
 sudo cat > /etc/apache2/sites-available/${url}.conf << EOF
@@ -73,15 +86,15 @@ sudo sed -i 's/#/ /g' /etc/apache2/sites-available/${url}.conf
 sudo service apache2 reload
 
 # Nextlcoud: Create data directory & set permission rights
-sudo -u ${short} mkdir /home/${short}/data
-sudo chown -R www-data:www-data /home/${short}/data
+sudo mkdir /data/${short}/data/
+sudo chown -R www-data:www-data /data/${short}/data/
 
 # Nextcloud: Create database
-pwddb=$(date +%s | sha256sum | base64 | head -c 32)
+pwddb=$(openssl rand -base64 12)
 sudo mysql -u root -e "CREATE USER '${short}_u'@'localhost' IDENTIFIED BY '${pwddb}'; CREATE DATABASE ${short}; GRANT ALL PRIVILEGES ON ${short}.* TO '${short}_u'@'localhost'; FLUSH PRIVILEGES;"
 
 # Nextcloud: Installation
-pwduser=$(date +%s | sha256sum | base64 | head -c 32)
+pwduser=$(openssl rand -base64 12)
 sudo -u www-data php /var/www/${short}/occ maintenance:install --database "mysql" --database-name "${short}" --database-user "${short}_u" --database-pass "${pwddb}" --data-dir "/home/${short}/data" --admin-user "${user}" --admin-pass "${pwduser}"
 
 # Nextcloud: Configuration
@@ -106,18 +119,11 @@ sudo -u www-data sed -i "s/RequestOptions::TIMEOUT => 30/RequestOptions::TIMEOUT
 sudo -u www-data php /var/www/${short}/occ config:system:set htaccess.RewriteBase --value=/
 sudo -u www-data php /var/www/${short}/occ maintenance:update:htaccess
 
-# Nextcloud: Install apps
+#Nextcloud: Install apps
 ## Calendar
 sudo -u www-data php /var/www/${short}/occ app:install calendar
 ## Contacts
 sudo -u www-data php /var/www/${short}/occ app:install contacts
-## Mail
-sudo -u www-data php /var/www/${short}/occ app:install mail
-## Talk
-sudo -u www-data php /var/www/${short}/occ app:install spreed
-## OnlyOffice
-sudo -u www-data php /var/www/${short}/occ app:install documentserver_community
-sudo -u www-data php /var/www/${short}/occ app:install onlyoffice
 ## Groupfolders
 sudo -u www-data php /var/www/${short}/occ app:install groupfolders
 
