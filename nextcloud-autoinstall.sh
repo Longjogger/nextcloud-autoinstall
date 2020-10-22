@@ -95,7 +95,7 @@ sudo mysql -u root -e "CREATE USER '${short}_u'@'localhost' IDENTIFIED BY '${pwd
 
 # Nextcloud: Installation
 pwduser=$(openssl rand -base64 12)
-sudo -u www-data php /var/www/${short}/occ maintenance:install --database "mysql" --database-name "${short}" --database-user "${short}_u" --database-pass "${pwddb}" --data-dir "/home/${short}/data" --admin-user "${user}" --admin-pass "${pwduser}"
+sudo -u www-data php /var/www/${short}/occ maintenance:install --database "mysql" --database-name "${short}" --database-user "${short}_u" --database-pass "${pwddb}" --data-dir "/data/${short}/data" --admin-user "${user}" --admin-pass "${pwduser}"
 
 # Nextcloud: Configuration
 ## Change the trusted_domain
